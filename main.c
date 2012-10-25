@@ -96,6 +96,36 @@ void* udp_sender(void *data) {
     return NULL;
 }
 
+struct bridge_loopback_init {
+    struct queue *received_queue;
+    struct queue *send_queue;
+};
+
+void* bridge_loopback(void *init) {
+
+#ifdef DEBUG
+    char straddr[INET6_ADDRSTRLEN];
+#endif
+
+    struct udp_data *data = NULL;
+
+    struct queue *received_queue = NULL, *send_queue = NULL;
+
+    received_queue = ((struct bridge_loopback_init*)init)->received_queue;
+    send_queue = ((struct bridge_loopback_init*)init)->send_queue;
+    DELETE(data);
+
+    while ((data = (struct udp_data*)queue_get(received_queue)) != NULL) {
+#ifdef DEBUG
+        inet_ntop(AF_INET6, &(data->remote->sin6_addr), straddr, sizeof(straddr));
+        printf("Data from/to %s:%d\nData: %s\n\n", straddr, ntohs(data->remote->sin6_port), data->payload);
+#endif
+        queue_add(data, send_queue);
+    }
+    
+    return NULL;
+}
+
 /* TCP receiver thread. 
  * It receives data from broker and put it to queue to send via UDP socket */
 void* tcp_receiver(void *data) {
@@ -155,7 +185,7 @@ int main() {
         *udp_receiver_queue, *udp_sender_queue;
 
     pthread_t
-        udp_receiver_thread, udp_sender_thread;
+        udp_receiver_thread, udp_sender_thread, bridge_loopback_thread;
 
     if ((udp_sockfd = socket(PF_INET6, SOCK_DGRAM, 0)) < 0) {
         perror("socket");
@@ -184,8 +214,14 @@ int main() {
     thread_init->queue = udp_sender_queue;
     pthread_create(&udp_sender_thread, NULL, udp_sender, thread_init);
     
+    struct bridge_loopback_init *special_init = NEW(struct bridge_loopback_init);
+    special_init->received_queue = udp_receiver_queue;
+    special_init->send_queue = udp_sender_queue;
+    pthread_create(&bridge_loopback_thread, NULL, bridge_loopback, special_init);
+    
     pthread_join(udp_receiver_thread, NULL);
     pthread_join(udp_sender_thread, NULL);
+    pthread_join(bridge_loopback_thread, NULL);
 
     close(udp_sockfd);
     return 0;
