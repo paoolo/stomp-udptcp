@@ -13,29 +13,36 @@ struct queue* queue_new() {
 
 void queue_delete(struct queue *queue) {
     struct queue_node *next = NULL, *node = NULL;
+    pthread_mutex_t *mutex = NULL;
 
     if (queue == NULL) {
         return;
     }
 
-    pthread_mutex_lock(queue->mutex);
+    mutex = queue->mutex;
+    pthread_mutex_lock(mutex);
+
     next = queue->head;
+
+    pthread_cond_destroy(queue->cond);
+    queue->cond = NULL;
+    queue->mutex = NULL;
     queue->head = NULL;
     queue->tail = NULL;
+    DELETE(queue);
+
     while (next != NULL) {
         node = next;
         next = node->next;
 
-        DELETE(node->handle);
         node->handle = NULL;
         node->next = NULL;
         DELETE(node);
     }
-    pthread_cond_destroy(queue->cond);
-    pthread_mutex_unlock(queue->mutex);
-    pthread_mutex_destroy(queue->mutex);
-    /* FIXME This is not thread-safe */
-    DELETE(queue);
+
+    pthread_mutex_unlock(mutex);
+    pthread_mutex_destroy(mutex);
+    DELETE(mutex);
 }
 
 void queue_add(void *handle, struct queue *queue) {

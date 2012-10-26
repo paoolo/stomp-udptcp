@@ -53,3 +53,33 @@ void* bridge_forward_client(void *data) {
     DELETE(data);
     return NULL;
 }
+
+struct bridge_loopback_init {
+    struct queue *received_queue;
+    struct queue *send_queue;
+};
+
+void* bridge_loopback(void *init) {
+
+#ifdef DEBUG
+    char straddr[INET6_ADDRSTRLEN];
+#endif
+
+    struct udp_data *data = NULL;
+
+    struct queue *received_queue = NULL, *send_queue = NULL;
+
+    received_queue = ((struct bridge_loopback_init*)init)->received_queue;
+    send_queue = ((struct bridge_loopback_init*)init)->send_queue;
+    DELETE(data);
+
+    while ((data = (struct udp_data*)queue_get(received_queue)) != NULL) {
+#ifdef DEBUG
+        inet_ntop(AF_INET6, &(data->remote->sin6_addr), straddr, sizeof(straddr));
+        printf("Data from/to %s:%d\nData: %s\n\n", straddr, ntohs(data->remote->sin6_port), data->payload);
+#endif
+        queue_add(data, send_queue);
+    }
+    
+    return NULL;
+}
