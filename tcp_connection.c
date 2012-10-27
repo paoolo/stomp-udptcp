@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+#ifdef DEBUG
+#include <arpa/inet.h>
+#endif
 
 #include "tcp_connection.h"
 
@@ -49,7 +52,6 @@ void* tcp_receiver(void *init) {
 #ifdef DEBUG
     tcp_remote = ((struct tcp_connection*) init)->tcp_remote;
 #endif
-    DELETE(init);
 
     while ((result = recv(tcp_sockfd, buffer, BUFLEN, 0)) > 0) {
         send_data = NEW(struct packet_data);
@@ -64,15 +66,16 @@ void* tcp_receiver(void *init) {
 
 #ifdef DEBUG
         inet_ntop(AF_INET, &tcp_remote->sin_addr, straddr, sizeof (straddr));
-        fprintf(stderr, "TCP:Receiver\nRemote: %s:%d\nData:\n---\n%s\n---\n", stdaddr, ntohs(tcp_remote->sin_port), buffer);
+        fprintf(stderr, "TCP:Receiver\nRemote: %s:%d\nData:\n---\n%s\n---\n", straddr, ntohs(tcp_remote->sin_port), buffer);
 #endif
 
         queue_add(send_data, tcp_receiver_queue);
 
         CLEAR(buffer, sizeof (char) *BUFLEN);
     }
-    perror("recv");
+    perror("TCP: recv");
 
+    DELETE(init);
     return NULL;
 }
 
@@ -98,21 +101,21 @@ void* tcp_sender(void *init) {
 #ifdef DEBUG
     tcp_remote = ((struct tcp_connection*) init)->tcp_remote;
 #endif
-    DELETE(init);
 
     while ((send_data = (struct packet_data*) queue_get(tcp_sender_queue)) != NULL) {
         str_length = tools_str_length(send_data->frame);
         if (send(tcp_sockfd, send_data->frame, str_length, 0) < 0) {
-            perror("send");
+            perror("TCP: send");
         }
 #ifdef DEBUG
         else {
             inet_ntop(AF_INET, &(tcp_remote->sin_addr), straddr, sizeof (straddr));
-            printf("TCP:Sender\nRemote %s:%d\nData:\n---\n%s\n---\n", straddr, ntohs(tcp_remote->sin_port), send_data->payload);
+            printf("TCP:Sender\nRemote %s:%d\nData:\n---\n%s\n---\n", straddr, ntohs(tcp_remote->sin_port), send_data->frame);
         }
 #endif
     }
 
+    DELETE(init);
     return NULL;
 }
 

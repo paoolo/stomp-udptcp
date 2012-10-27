@@ -16,8 +16,6 @@
 #include "tcp_connection.h"
 #include "udp_connection.h"
 
-#define DEBUG
-
 int map_compare(char *object, char *another) {
     return strcmp(object, another);
 }
@@ -38,6 +36,8 @@ void usage(char **argv) {
 }
 
 int main(int argc, char **argv) {
+
+    struct udp_connection *udp_connection;
 
     char *tcp_hostname = NULL;
     int udp_port = -1, tcp_port = -1;
@@ -79,6 +79,11 @@ int main(int argc, char **argv) {
         usage(argv);
         exit(1);
     }
+
+    udp_connection = udp_start(udp_port);
+
+    pthread_join(udp_connection->udp_receiver_thread, NULL);
+    pthread_join(udp_connection->udp_sender_thread, NULL);
 
     return 0;
 }

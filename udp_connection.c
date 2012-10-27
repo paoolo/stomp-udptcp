@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+#ifdef DEBUG
+#include <arpa/inet.h>
+#endif
 
 #include "udp_connection.h"
 
@@ -42,7 +45,6 @@ void* udp_receiver(void *init) {
 
     udp_sockfd = ((struct udp_connection*) init)->udp_sockfd;
     udp_receiver_queue = ((struct udp_connection*) init)->udp_receiver_queue;
-    DELETE(init);
 
     while ((result = recvfrom(udp_sockfd, buffer, BUFLEN, 0, (struct sockaddr*) (&udp_remote), &udp_remote_length)) > 0) {
         received_data = NEW(struct packet_data);
@@ -64,8 +66,9 @@ void* udp_receiver(void *init) {
 
         CLEAR(buffer, sizeof (char) *BUFLEN);
     }
-    perror("recvfrom");
+    perror("UDP: recvfrom");
 
+    DELETE(init);
     return NULL;
 }
 
@@ -85,21 +88,21 @@ void* udp_sender(void *init) {
 
     udp_sockfd = ((struct udp_connection*) init)->udp_sockfd;
     udp_sender_queue = ((struct udp_connection*) init)->udp_sender_queue;
-    DELETE(init);
 
     while ((send_data = (struct packet_data*) queue_get(udp_sender_queue)) != NULL) {
         str_length = tools_str_length(send_data->frame);
-        if (sendto(udp_sockfd, send_data->frame, str_length, 0, (struct sockaddr*) send_data->remote, sizeof (*(send_data->remote))) < 0) {
-            perror("sendto");
+        if (sendto(udp_sockfd, send_data->frame, str_length, 0, (struct sockaddr*) &send_data->remote, sizeof (send_data->remote)) < 0) {
+            perror("UDP: sendto");
         }
 #ifdef DEBUG
         else {
             inet_ntop(AF_INET6, &(send_data->remote->sin6_addr), straddr, sizeof (straddr));
-            printf("UDP:Sender\nRemote %s:%d\nData:\n---\n%s\n---\n", straddr, ntohs(send_data->remote->sin6_port), send_data->payload);
+            printf("UDP:Sender\nRemote %s:%d\nData:\n---\n%s\n---\n", straddr, ntohs(send_data->remote->sin6_port), send_data->frame);
         }
 #endif
     }
 
+    DELETE(init);
     return NULL;
 }
 
@@ -118,11 +121,12 @@ struct udp_connection* udp_start(int port) {
         exit(1);
     }
 
+    connection->udp_local = NEW(struct sockaddr_in6);
     connection->udp_local->sin6_family = AF_INET6;
     connection->udp_local->sin6_port = htons(port);
     connection->udp_local->sin6_addr = in6addr_any;
 
-    if (bind(connection->udp_sockfd, (const struct sockaddr*) (&connection->udp_local), sizeof (connection->udp_local)) < 0) {
+    if (bind(connection->udp_sockfd, (struct sockaddr*)connection->udp_local, sizeof (*connection->udp_local)) < 0) {
         perror("UDP: bind");
         exit(1);
     }
