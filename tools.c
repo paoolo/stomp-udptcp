@@ -4,6 +4,10 @@
 
 #include "tools.h"
 
+void tools_memset(void *ptr, int value, size_t num) {
+    memset(ptr, value, num);
+}
+
 void* tools_new(int size) {
     void *ptr = NULL;
 

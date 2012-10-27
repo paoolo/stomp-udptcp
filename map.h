@@ -17,10 +17,8 @@ void map_delete(struct map* map);
 
 void map_put(void *key, void *value, struct map *map);
 
-void* map_get(void *key, struct map *map);
+void* map_get(void *key, struct map *map, int(*map_compare)(void*, void*));
 
-void* map_remove(void *key, struct map *map);
-
-int map_compare(void *object, void *another);
+void* map_remove(void *key, struct map *map, int(*map_compare)(void*, void*));
 
 #endif

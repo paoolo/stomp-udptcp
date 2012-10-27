@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -g -ansi -Wall -Wextra -pedantic
-LIBS = -lrt -pthread
-OBJS = queue.o tools.o
+LIBS = -pthread
+OBJS = map.o queue.o tools.o udp_connection.o tcp_connection.o
 
 all: main.out
 
@@ -9,7 +9,7 @@ all: main.out
 	$(CC) $(CFLAGS) -o $@ $< $(OBJS) $(LIBS)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $< $(LIBS)
 
 clean:
 	rm -rf *.o

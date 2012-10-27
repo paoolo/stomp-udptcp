@@ -1,4 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+
 #include "map.h"
+
+#include "tools.h"
 
 struct map* map_new() {
     struct map *map = NULL;
@@ -16,7 +23,7 @@ void map_delete(struct map* map) {
         return;
     }
 
-    mutex = map->queue;
+    mutex = map->mutex;
     pthread_mutex_lock(mutex);
 
     next = map->head;
@@ -52,7 +59,7 @@ void map_put(void *key, void *value, struct map *map) {
     node = NEW(struct map_node);
     node->key = key;
     node->value = value;
-    
+
     pthread_mutex_lock(map->mutex);
     if (map->tail != NULL) {
         map->tail->next = node;
@@ -64,7 +71,7 @@ void map_put(void *key, void *value, struct map *map) {
     pthread_mutex_unlock(map->mutex);
 }
 
-void* map_get(void *key, struct map *map) {
+void* map_get(void *key, struct map *map, int(*map_compare)(void*, void*)) {
     struct map_node *node = NULL;
     void *value = NULL;
 
@@ -86,7 +93,7 @@ void* map_get(void *key, struct map *map) {
     return value;
 }
 
-void* map_remove(void *key, struct map *map) {
+void* map_remove(void *key, struct map *map, int(*map_compare)(void*, void*)) {
     struct map_node *node = NULL;
     void *value = NULL;
 

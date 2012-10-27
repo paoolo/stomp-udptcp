@@ -7,6 +7,9 @@ struct tcp_connection {
 
     struct sockaddr_in6
         *udp_remote;
+    
+    struct sockaddr_in
+        *tcp_remote;
 
     struct queue
         *tcp_receiver_queue, *tcp_sender_queue;

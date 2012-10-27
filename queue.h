@@ -1,6 +1,3 @@
-#include <pthread.h>
-#include <unistd.h>
-
 #ifndef QUEUE_H
 #define QUEUE_H
 
@@ -23,4 +20,4 @@ void queue_add(void *handle, struct queue *queue);
 
 void* queue_get(struct queue *queue);
 
-#endif /* QUEUE_H */
+#endif
