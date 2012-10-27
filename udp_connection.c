@@ -155,6 +155,9 @@ void udp_stop(struct udp_connection *connection) {
     queue_delete(connection->udp_sender_queue);
     connection->udp_receiver_queue = NULL;
     connection->udp_sender_queue = NULL;
+    
+    DELETE(connection->udp_local);
+    connection->udp_local = NULL;
 
     /* FIXME closing socket */
     shutdown(connection->udp_sockfd, SHUT_RDWR);

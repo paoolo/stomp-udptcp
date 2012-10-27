@@ -136,6 +136,7 @@ struct tcp_connection* tcp_start(char *hostname, int port, struct sockaddr_in6 *
     }
 
 
+    connection->tcp_remote = NEW(struct sockaddr_in);
     connection->tcp_remote->sin_family = AF_INET;
     connection->tcp_remote->sin_port = htons(port);
 
@@ -143,7 +144,7 @@ struct tcp_connection* tcp_start(char *hostname, int port, struct sockaddr_in6 *
     tools_memcpy(&connection->tcp_remote->sin_addr.s_addr,
             host->h_addr, host->h_length);
 
-    if (connect(connection->tcp_sockfd, (const struct sockaddr*) &connection->tcp_remote, sizeof (connection->tcp_remote)) < 0) {
+    if (connect(connection->tcp_sockfd, (const struct sockaddr*) connection->tcp_remote, sizeof (*connection->tcp_remote)) < 0) {
         perror("TCP: connect");
         exit(1);
     }
@@ -174,6 +175,9 @@ void tcp_stop(struct tcp_connection *connection) {
     connection->tcp_receiver_queue = NULL;
     connection->tcp_sender_queue = NULL;
 
+    DELETE(connection->tcp_remote);
+    connection->tcp_remote = NULL;
+    
     /* FIXME closing socket */
     shutdown(connection->tcp_sockfd, SHUT_RDWR);
     close(connection->tcp_sockfd);

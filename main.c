@@ -1,17 +1,15 @@
+#include <arpa/inet.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <pthread.h>
-
-#include <getopt.h>
 
 #include "main.h"
 
 #include "tools.h"
 #include "queue.h"
 #include "map.h"
-#include "bridge.h"
 
 #include "tcp_connection.h"
 #include "udp_connection.h"
@@ -37,7 +35,12 @@ void usage(char **argv) {
 
 int main(int argc, char **argv) {
 
-    struct udp_connection *udp_connection;
+    struct udp_connection *udp_connection = NULL;
+    struct map *tcp_connection_map = NULL;
+
+    char straddr[INET6_ADDRSTRLEN];
+    struct packet_data *received_data = NULL;
+    struct tcp_connection* tcp_connection = NULL;
 
     char *tcp_hostname = NULL;
     int udp_port = -1, tcp_port = -1;
@@ -81,9 +84,20 @@ int main(int argc, char **argv) {
     }
 
     udp_connection = udp_start(udp_port);
+    tcp_connection_map = map_new();
 
-    pthread_join(udp_connection->udp_receiver_thread, NULL);
-    pthread_join(udp_connection->udp_sender_thread, NULL);
+    while ((received_data = queue_get(udp_connection->udp_receiver_queue)) != NULL) {
+        inet_ntop(AF_INET6, &(received_data->remote->sin6_addr), straddr, sizeof (straddr));
+#ifdef DEBUG
+        printf("Data from %s:%d\nData: %s\n\n", straddr, ntohs(received_data->remote->sin6_port), received_data->frame);
+#endif
+        tcp_connection = (struct tcp_connection*) map_get(straddr, tcp_connection_map, (int(*)(void*, void*))map_compare);
+        if (tcp_connection == NULL) {
+            tcp_connection = tcp_start(tcp_hostname, tcp_port, received_data->remote, udp_connection->udp_sender_queue);
+            map_put(straddr, tcp_connection, tcp_connection_map);
+        }
+        queue_add(received_data, tcp_connection->tcp_sender_queue);
+    }
 
     return 0;
 }
