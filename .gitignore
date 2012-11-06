@@ -2,3 +2,7 @@
 *.out
 *.class
 bin/
+out/
+*.ipr
+*.iws
+*.iml
