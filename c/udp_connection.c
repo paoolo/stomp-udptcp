@@ -46,6 +46,8 @@ void* udp_receiver(void *init) {
     udp_sockfd = ((struct udp_connection*) init)->udp_sockfd;
     udp_receiver_queue = ((struct udp_connection*) init)->udp_receiver_queue;
 
+    CLEAR(&udp_remote, sizeof (udp_remote));
+    CLEAR(buffer, sizeof (char) *BUFLEN);
     while ((result = recvfrom(udp_sockfd, buffer, BUFLEN, 0, (struct sockaddr*) (&udp_remote), &udp_remote_length)) > 0) {
         received_data = NEW(struct packet_data);
 
@@ -65,6 +67,7 @@ void* udp_receiver(void *init) {
         queue_add(received_data, udp_receiver_queue);
 
         CLEAR(buffer, sizeof (char) *BUFLEN);
+        CLEAR(&udp_remote, sizeof (udp_remote));
     }
     perror("UDP: recvfrom");
 
@@ -126,7 +129,7 @@ struct udp_connection* udp_start(int port) {
     connection->udp_local->sin6_port = htons(port);
     connection->udp_local->sin6_addr = in6addr_any;
 
-    if (bind(connection->udp_sockfd, (struct sockaddr*)connection->udp_local, sizeof (*connection->udp_local)) < 0) {
+    if (bind(connection->udp_sockfd, (struct sockaddr*) connection->udp_local, sizeof (*connection->udp_local)) < 0) {
         perror("UDP: bind");
         exit(1);
     }
@@ -155,7 +158,7 @@ void udp_stop(struct udp_connection *connection) {
     queue_delete(connection->udp_sender_queue);
     connection->udp_receiver_queue = NULL;
     connection->udp_sender_queue = NULL;
-    
+
     DELETE(connection->udp_local);
     connection->udp_local = NULL;
 

@@ -135,7 +135,6 @@ struct tcp_connection* tcp_start(char *hostname, int port, struct sockaddr_in6 *
         exit(1);
     }
 
-
     connection->tcp_remote = NEW(struct sockaddr_in);
     connection->tcp_remote->sin_family = AF_INET;
     connection->tcp_remote->sin_port = htons(port);
@@ -177,7 +176,7 @@ void tcp_stop(struct tcp_connection *connection) {
 
     DELETE(connection->tcp_remote);
     connection->tcp_remote = NULL;
-    
+
     /* FIXME closing socket */
     shutdown(connection->tcp_sockfd, SHUT_RDWR);
     close(connection->tcp_sockfd);
