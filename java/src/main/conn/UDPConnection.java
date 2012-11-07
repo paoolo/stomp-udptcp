@@ -24,7 +24,7 @@ public class UDPConnection {
 
     private final Object closing = new Object();
 
-    private final DatagramSocket socket;
+    private final DatagramSocket datagramSocket;
 
     private void setRunning(boolean running) {
         synchronized (this.running) {
@@ -41,17 +41,20 @@ public class UDPConnection {
     }
 
     public UDPConnection(InetAddress udpAddress, int udpPort) throws Exception {
-        SocketAddress addr = new InetSocketAddress(udpAddress, udpPort);
-        socket = new DatagramSocket(addr);
-        logger.info("Bound to " + addr.toString());
 
-        UDPReceiver receiver = new UDPReceiver(socket, running, this,
+        datagramSocket = new DatagramSocket(udpPort, udpAddress);
+        logger.info("Bound to " + udpAddress + ":" + udpPort);
+
+        UDPReceiver receiver = new UDPReceiver(datagramSocket, running, this,
                 receiverQueue);
-        UDPSender sender = new UDPSender(socket, running, this,
+        UDPSender sender = new UDPSender(datagramSocket, running, this,
                 senderQueue);
 
         receiverThread = new Thread(receiver, "udp-receiver");
         senderThread = new Thread(sender, "udp-sender");
+
+        receiver.setSecond(senderThread);
+        sender.setSecond(receiverThread);
 
         setRunning(true);
         receiverThread.start();
@@ -60,8 +63,8 @@ public class UDPConnection {
 
     public void close() {
         synchronized (closing) {
-            if (socket.isBound() && !socket.isClosed()) {
-                socket.close();
+            if (datagramSocket.isBound() && !datagramSocket.isClosed()) {
+                datagramSocket.close();
                 logger.info("Closed");
             }
         }

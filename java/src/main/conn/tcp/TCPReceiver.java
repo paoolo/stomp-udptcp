@@ -18,13 +18,13 @@ public class TCPReceiver implements Runnable {
 
     private final AtomicBoolean running;
 
-    private final int udpPort;
+    private final Pipeline<Frame> receiverQueue;
 
     private final TCPConnection tcpConnection;
 
-    private final InetAddress udpAddress;
+    private final int udpPort;
 
-    private final Pipeline<Frame> receiverQueue;
+    private final InetAddress udpAddress;
 
     private Thread second;
 
@@ -32,8 +32,8 @@ public class TCPReceiver implements Runnable {
                        int udpPort, InetAddress udpAddress, Pipeline<Frame> receiverQueue) {
         this.in = in;
         this.running = running;
-        this.udpPort = udpPort;
         this.tcpConnection = tcpConnection;
+        this.udpPort = udpPort;
         this.udpAddress = udpAddress;
         this.receiverQueue = receiverQueue;
     }

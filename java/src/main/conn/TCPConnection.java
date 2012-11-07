@@ -50,10 +50,8 @@ public class TCPConnection {
 
         this.receiverQueue = receiverQueue;
 
-        SocketAddress tcpEndpoint = new InetSocketAddress(tcpAddress, tcpPort);
-        socket = new Socket();
-        socket.connect(tcpEndpoint);
-        logger.info("Connected to " + tcpEndpoint.toString());
+        socket = new Socket(tcpAddress, tcpPort);
+        logger.info("Connected to " + tcpAddress + ":" + tcpPort);
 
         TCPReceiver receiver = new TCPReceiver(socket.getInputStream(), running, this,
                 udpPort, udpAddress, this.receiverQueue);

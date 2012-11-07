@@ -43,6 +43,16 @@ public class UDPSender implements Runnable {
         }
     }
 
+    public void setSecond(Thread second) {
+        if (second != null) {
+            synchronized (this) {
+                if (this.second == null) {
+                    this.second = second;
+                }
+            }
+        }
+    }
+
     @Override
     public void run() {
         DatagramPacket packet;
@@ -55,8 +65,8 @@ public class UDPSender implements Runnable {
                 packet = new DatagramPacket(frame.data, frame.data.length, frame.address, frame.port);
                 socket.send(packet);
 
-                logger.info("Sensor: " + frame.address + ":" + frame.port);
-                logger.debug("Data: " + new String(frame.data));
+                logger.info("Sensor:\n" + frame.address + ":" + frame.port);
+                logger.debug("Data:\n" + new String(frame.data));
             }
         } catch (Exception e) {
             logger.error("Error during sending frame", e);
