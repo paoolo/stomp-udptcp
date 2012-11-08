@@ -74,7 +74,8 @@ public class TCPReceiver implements Runnable {
                 tmp = new byte[length];
                 System.arraycopy(data, 0, tmp, 0, length);
 
-                logger.debug("Receiving data from broker: " + Arrays.toString(tmp));
+                logger.info("To sensor:\n" + udpAddress + ":" + udpPort);
+                logger.debug("Data:\n" + new String(tmp));
                 receiverQueue.add(new Frame(tmp, udpAddress, udpPort));
             }
         } catch (Exception e) {

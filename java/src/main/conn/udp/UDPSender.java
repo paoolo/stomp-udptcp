@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UDPSender implements Runnable {
 
+    private static final int CRC_OFFSET = 8;
+
     private static final Logger logger = Logger.getLogger(UDPSender.class);
 
     private final DatagramSocket socket;
@@ -65,7 +67,7 @@ public class UDPSender implements Runnable {
                 packet = new DatagramPacket(frame.data, frame.data.length, frame.address, frame.port);
                 socket.send(packet);
 
-                logger.info("Sensor:\n" + frame.address + ":" + frame.port);
+                logger.info("To sensor:\n" + frame.address + ":" + frame.port);
                 logger.debug("Data:\n" + new String(frame.data));
             }
         } catch (Exception e) {

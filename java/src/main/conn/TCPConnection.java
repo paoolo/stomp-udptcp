@@ -36,6 +36,12 @@ public class TCPConnection {
         }
     }
 
+    public boolean isRunning() {
+        synchronized (running) {
+            return running.get();
+        }
+    }
+
     public Pipeline<Frame> getReceiverQueue() {
         return receiverQueue;
     }
@@ -51,7 +57,7 @@ public class TCPConnection {
         this.receiverQueue = receiverQueue;
 
         socket = new Socket(tcpAddress, tcpPort);
-        logger.info("Connected to " + tcpAddress + ":" + tcpPort);
+        logger.info("Connected to\n" + tcpAddress + ":" + tcpPort);
 
         TCPReceiver receiver = new TCPReceiver(socket.getInputStream(), running, this,
                 udpPort, udpAddress, this.receiverQueue);

@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,14 +43,15 @@ public class Main {
         while ((frame = receiverQueue.remove()) != null) {
             String remote = frame.address.toString() + ":" + frame.port;
 
-            logger.info("Sensor: " + remote + " Data: " + Arrays.toString(frame.data));
+            logger.info("Sensor:\n" + remote);
+            logger.debug("Data:\n" + new String(frame.data));
 
-            if (!tcpConnectionMap.containsKey(remote)) {
+            tcpConnection = tcpConnectionMap.get(remote);
+            if (tcpConnection == null || !tcpConnection.isRunning()) {
                 tcpConnection = new TCPConnection(tcpAddress, tcpPort, frame.address, frame.port, senderQueue);
                 tcpConnectionMap.put(remote, tcpConnection);
-            } else {
-                tcpConnection = tcpConnectionMap.get(remote);
             }
+
             tcpConnection.getSenderQueue().add(frame);
         }
     }

@@ -43,7 +43,7 @@ public class UDPConnection {
     public UDPConnection(InetAddress udpAddress, int udpPort) throws Exception {
 
         datagramSocket = new DatagramSocket(udpPort, udpAddress);
-        logger.info("Bound to " + udpAddress + ":" + udpPort);
+        logger.info("Bound to\n" + udpAddress + ":" + udpPort);
 
         UDPReceiver receiver = new UDPReceiver(datagramSocket, running, this,
                 receiverQueue);
