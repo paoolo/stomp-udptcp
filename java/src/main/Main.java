@@ -43,8 +43,8 @@ public class Main {
         while ((frame = receiverQueue.remove()) != null) {
             String remote = frame.address.toString() + ":" + frame.port;
 
-            logger.info("Sensor:\n" + remote);
-            logger.debug("Data:\n" + new String(frame.data));
+            logger.info("Sensor: " + remote);
+            logger.debug("Data: " + new String(frame.data).replaceAll("\\n", "^]"));
 
             tcpConnection = tcpConnectionMap.get(remote);
             if (tcpConnection == null || !tcpConnection.isRunning()) {

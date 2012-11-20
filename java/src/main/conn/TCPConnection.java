@@ -57,7 +57,7 @@ public class TCPConnection {
         this.receiverQueue = receiverQueue;
 
         socket = new Socket(tcpAddress, tcpPort);
-        logger.info("Connected to\n" + tcpAddress + ":" + tcpPort);
+        logger.info("Connected to " + tcpAddress + ":" + tcpPort);
 
         TCPReceiver receiver = new TCPReceiver(socket.getInputStream(), running, this,
                 udpPort, udpAddress, this.receiverQueue);

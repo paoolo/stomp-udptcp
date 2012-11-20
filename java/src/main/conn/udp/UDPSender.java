@@ -67,8 +67,8 @@ public class UDPSender implements Runnable {
                 packet = new DatagramPacket(frame.data, frame.data.length, frame.address, frame.port);
                 socket.send(packet);
 
-                logger.info("To sensor:\n" + frame.address + ":" + frame.port);
-                logger.debug("Data:\n" + new String(frame.data));
+                logger.info("To sensor: " + frame.address + ":" + frame.port);
+                logger.debug("Data: " + new String(frame.data).replaceAll("\\n", "^]"));
             }
         } catch (Exception e) {
             logger.error("Error during sending frame", e);

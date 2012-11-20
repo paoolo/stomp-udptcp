@@ -1,7 +1,6 @@
 package main.conn.udp;
 
 import main.conn.UDPConnection;
-import main.crc.CRC32;
 import main.data.Frame;
 import main.utils.Pipeline;
 import org.apache.log4j.Logger;
@@ -67,8 +66,8 @@ public class UDPReceiver implements Runnable {
                 byte[] stream = new byte[packet.getLength()];
                 System.arraycopy(packet.getData(), 0, stream, 0, packet.getLength());
 
-                logger.info("From sensor:\n" + packet.getAddress().toString() + ":" + packet.getPort());
-                logger.debug("Data:\n" + new String(stream));
+                logger.info("From sensor: " + packet.getAddress().toString() + ":" + packet.getPort());
+                logger.debug("Data: " + new String(stream).replaceAll("\\n", "^]"));
 
                 receiverQueue.add(new Frame(stream, packet.getAddress(), packet.getPort()));
             }

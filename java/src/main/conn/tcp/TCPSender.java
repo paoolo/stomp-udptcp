@@ -62,8 +62,8 @@ public class TCPSender implements Runnable {
                 frame = senderQueue.remove();
                 out.write(frame.data);
 
-                logger.info("From sensor:\n" + frame.address + ":" + frame.port);
-                logger.debug("Data:\n" + new String(frame.data));
+                logger.info("From sensor: " + frame.address + ":" + frame.port);
+                logger.debug("Data: " + new String(frame.data).replaceAll("\\n", "^]"));
             }
         } catch (Exception e) {
             logger.error("Error during sending frame", e);
