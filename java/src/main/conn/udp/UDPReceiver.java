@@ -62,6 +62,9 @@ public class UDPReceiver implements Runnable {
         try {
             while (isRunning()) {
                 socket.receive(packet);
+                synchronized (socket) {
+                    /* TODO send ACK */
+                }
 
                 byte[] stream = new byte[packet.getLength()];
                 System.arraycopy(packet.getData(), 0, stream, 0, packet.getLength());
