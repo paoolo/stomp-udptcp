@@ -7,6 +7,10 @@
     <property name="jar" location="jar"/>
     <property name="lib" location="lib"/>
 
+    <property name="broker_ip" value="127.0.0.1"/>
+    <property name="broker_port" value="61613"/>
+    <property name="proxy_port" value="61613"/>
+
     <!-- default values -->
     <property name="main-class" value="main.Main"/>
 
@@ -41,9 +45,31 @@
                 <path refid="classpath"/>
                 <path location="${jar}/${ant.project.name}.jar"/>
             </classpath>
-            <arg value="127.0.0.1"/>
-            <arg value="61613"/>
-            <arg value="61613"/>
+            <!-- broker hostname -->
+            <arg value="${broker_ip}"/>
+            <!-- broker TCP port -->
+            <arg value="${broker_port}"/>
+            <!-- UDP port -->
+            <arg value="${proxy_port}"/>
+            <!-- mode -->
+            <arg value="run" />
+        </java>
+    </target>
+
+    <target name="test" depends="jar">
+        <java fork="true" classname="${main-class}">
+            <classpath>
+                <path refid="classpath"/>
+                <path location="${jar}/${ant.project.name}.jar"/>
+            </classpath>
+            <!-- broker hostname -->
+            <arg value="${broker_ip}"/>
+            <!-- broker TCP port -->
+            <arg value="${broker_port}"/>
+            <!-- UDP port -->
+            <arg value="${proxy_port}"/>
+            <!-- mode -->
+            <arg value="test" />
         </java>
     </target>
 

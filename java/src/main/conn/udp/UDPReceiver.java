@@ -19,16 +19,19 @@ public class UDPReceiver implements Runnable {
 
     private final Pipeline<Frame> receiverQueue;
 
+    private final Pipeline<Frame> senderQueue;
+
     private final UDPConnection udpConnection;
 
     private Thread second;
 
     public UDPReceiver(DatagramSocket socket, AtomicBoolean running, UDPConnection udpConnection,
-                       Pipeline<Frame> receiverQueue) {
+                       Pipeline<Frame> receiverQueue, Pipeline<Frame> senderQueue) {
         this.socket = socket;
         this.running = running;
         this.udpConnection = udpConnection;
         this.receiverQueue = receiverQueue;
+        this.senderQueue = senderQueue;
     }
 
     private boolean isRunning() {
@@ -55,16 +58,15 @@ public class UDPReceiver implements Runnable {
 
     @Override
     public void run() {
-        byte[] data = new byte[1024];
+        byte[] ack = "\r".getBytes();
+        byte[] data = new byte[1500];
         DatagramPacket packet = new DatagramPacket(data, data.length);
 
         logger.info("Starting receiver thread");
         try {
             while (isRunning()) {
                 socket.receive(packet);
-                synchronized (socket) {
-                    /* TODO send ACK */
-                }
+                senderQueue.add(new Frame(ack, packet.getAddress(), packet.getPort()));
 
                 byte[] stream = new byte[packet.getLength()];
                 System.arraycopy(packet.getData(), 0, stream, 0, packet.getLength());

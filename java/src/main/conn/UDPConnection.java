@@ -46,7 +46,7 @@ public class UDPConnection {
         logger.info("Bound to " + udpAddress + ":" + udpPort);
 
         UDPReceiver receiver = new UDPReceiver(datagramSocket, running, this,
-                receiverQueue);
+                receiverQueue, senderQueue);
         UDPSender sender = new UDPSender(datagramSocket, running, this,
                 senderQueue);
 
