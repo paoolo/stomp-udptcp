@@ -1,0 +1,79 @@
+<project name="UDPTCP" default="run" basedir=".">
+    <description>UDPTCP-Bridge</description>
+
+    <!-- set global properties for this build -->
+    <property name="src" location="src"/>
+    <property name="bin" location="bin"/>
+    <property name="jar" location="jar"/>
+    <property name="lib" location="lib"/>
+
+    <property name="broker_ip" value="127.0.0.1"/>
+    <property name="broker_port" value="61613"/>
+    <property name="proxy_port" value="61613"/>
+
+    <!-- default values -->
+    <property name="main-class" value="main.Main"/>
+
+    <path id="classpath">
+        <fileset dir="${lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="init">
+        <mkdir dir="${bin}"/>
+    </target>
+
+    <target name="compile" depends="init" description="Compile the source ">
+        <javac includeantruntime="false" srcdir="${src}" destdir="${bin}">
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile" description="Generate the distribution">
+        <mkdir dir="${jar}"/>
+        <jar jarfile="${jar}/${ant.project.name}.jar" basedir="${bin}">
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java fork="true" classname="${main-class}">
+            <classpath>
+                <path refid="classpath"/>
+                <path location="${jar}/${ant.project.name}.jar"/>
+            </classpath>
+            <!-- broker hostname -->
+            <arg value="${broker_ip}"/>
+            <!-- broker TCP port -->
+            <arg value="${broker_port}"/>
+            <!-- UDP port -->
+            <arg value="${proxy_port}"/>
+            <!-- mode -->
+            <arg value="run" />
+        </java>
+    </target>
+
+    <target name="test" depends="jar">
+        <java fork="true" classname="${main-class}">
+            <classpath>
+                <path refid="classpath"/>
+                <path location="${jar}/${ant.project.name}.jar"/>
+            </classpath>
+            <!-- broker hostname -->
+            <arg value="${broker_ip}"/>
+            <!-- broker TCP port -->
+            <arg value="${broker_port}"/>
+            <!-- UDP port -->
+            <arg value="${proxy_port}"/>
+            <!-- mode -->
+            <arg value="test" />
+        </java>
+    </target>
+
+    <target name="clean" description="Clean up">
+        <delete dir="${bin}"/>
+    </target>
+</project>
