@@ -60,6 +60,8 @@ public class UDPSender implements Runnable {
                 frame = senderQueue.remove();
                 packet = new DatagramPacket(frame.data, frame.data.length, frame.address, frame.port);
                 socket.send(packet);
+                System.err.println("2;" + System.currentTimeMillis() + ";" + packet.getLength());
+                Thread.sleep(100);
             }
         } catch (Exception e) {
             setRunning(false);

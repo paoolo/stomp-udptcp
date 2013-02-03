@@ -62,6 +62,7 @@ public class UDPReceiver implements Runnable {
         try {
             while (isRunning()) {
                 socket.receive(packet);
+                System.err.println("1;" + System.currentTimeMillis() + ";" + packet.getLength());
                 senderQueue.add(new Frame(ack, packet.getAddress(), packet.getPort()));
 
                 byte[] stream = new byte[packet.getLength()];
